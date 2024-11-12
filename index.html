@@ -1,250 +1,578 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pojav Launcher Downloads</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        .card {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        :root {
+            --primary: #2563eb;
+            --secondary: #1e40af;
+            --background: #0f172a;
+            --card: #1e293b;
+            --text: #e2e8f0;
+            --overlay: rgba(0, 0, 0, 0.75);
         }
-        .card:hover {
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body {
+            background: var(--background);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            opacity: 0;
+            transform: translateY(-20px);
+            animation: fadeInDown 0.8s ease forwards;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #3b82f6, #2563eb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .menu {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .menu-item {
+            background: var(--card);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.8s ease forwards;
+        }
+
+        .menu-item:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 20px rgba(0,0,0,0.2);
         }
-        .menu-item {
-            transition: all 0.3s ease;
+
+        .menu-item i {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
         }
-        .menu-item:hover {
-            transform: scale(1.05);
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--overlay);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
+
+        .modal.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: var(--background);
+            margin: auto;
+            padding: 2rem;
+            border-radius: 1rem;
+            width: 90%;
+            max-width: 1200px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            transform: translateY(-50px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text);
+            background: none;
+            border: none;
+            padding: 0.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .close-modal:hover {
+            transform: rotate(90deg);
+        }
+
+        .modal-title {
+            margin-bottom: 2rem;
+            padding-right: 2rem;
+        }
+
+        .search-bar {
+            margin-bottom: 2rem;
+            width: 100%;
+            padding: 0.8rem;
+            border-radius: 0.5rem;
+            background: var(--card);
+            border: 1px solid #4a5568;
+            color: var(--text);
+            font-size: 1rem;
+        }
+
+        .files-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .file-card {
+            background: var(--card);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            transition: transform 0.3s ease;
+        }
+
+        .file-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .file-icon {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 1rem;
+        }
+
+        .file-info {
+            margin-bottom: 1rem;
+        }
+
+        .file-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .file-meta {
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+
+        .file-description {
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            color: #94a3b8;
+        }
+
+        .download-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
         .download-btn {
-            transition: all 0.2s ease;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            color: white;
+            font-size: 0.9rem;
+            transition: transform 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
+
         .download-btn:hover {
             transform: translateY(-2px);
         }
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
+
+        .download-btn.mediafire { background: #1e88e5; }
+        .download-btn.drive { background: #0f9d58; }
+        .download-btn.github { background: #333; }
+        .download-btn.modrinth { background: #1bd96a; }
+        .download-btn.curseforge { background: #f16436; }
+
+        @keyframes fadeInDown {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        .float-animation {
-            animation: float 3s ease-in-out infinite;
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+
+            .menu-item {
+                padding: 1rem;
+            }
+
+            .modal-content {
+                padding: 1rem;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .loading::after {
+            content: "";
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--card);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen">
-    <!-- Header -->
-    <header class="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 shadow-lg">
-        <div class="container mx-auto flex justify-between items-center">
-            <h1 class="text-3xl font-bold float-animation">Pojav Launcher Downloads</h1>
-            <div class="space-x-4">
-                <button class="theme-toggle bg-white text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-200 transition-all">
-                    🌙 Theme
-                </button>
+<body>
+    <div class="container">
+        <header>
+            <h1>Pojav Launcher Downloads</h1>
+            <p>Download APK, Mods, Modpacks, and Resource Packs</p>
+        </header>
+
+        <div class="menu">
+            <div class="menu-item" data-type="apk" style="animation-delay: 0.2s">
+                <i class="fas fa-download"></i>
+                <h2>Pojav Launcher APK</h2>
+                <p>Download the latest version of Pojav Launcher</p>
+            </div>
+            <div class="menu-item" data-type="mods" style="animation-delay: 0.4s">
+                <i class="fas fa-puzzle-piece"></i>
+                <h2>Mods</h2>
+                <p>Enhance your gameplay with various mods</p>
+            </div>
+            <div class="menu-item" data-type="modpacks" style="animation-delay: 0.6s">
+                <i class="fas fa-box-open"></i>
+                <h2>Modpacks</h2>
+                <p>Complete modpack collections</p>
+            </div>
+            <div class="menu-item" data-type="resourcepacks" style="animation-delay: 0.8s">
+                <i class="fas fa-paint-brush"></i>
+                <h2>Resource Packs</h2>
+                <p>Change the look and feel of your game</p>
             </div>
         </div>
-    </header>
+    </div>
 
-    <!-- Main Menu -->
-    <div class="container mx-auto p-8">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="mainMenu">
-            <div class="menu-item bg-white p-6 rounded-xl shadow-lg text-center cursor-pointer hover:bg-blue-50">
-                <div class="text-4xl mb-4">📱</div>
-                <h2 class="text-xl font-semibold">Pojav Launcher APK</h2>
-            </div>
-            <div class="menu-item bg-white p-6 rounded-xl shadow-lg text-center cursor-pointer hover:bg-blue-50">
-                <div class="text-4xl mb-4">🎮</div>
-                <h2 class="text-xl font-semibold">Mods</h2>
-            </div>
-            <div class="menu-item bg-white p-6 rounded-xl shadow-lg text-center cursor-pointer hover:bg-blue-50">
-                <div class="text-4xl mb-4">📦</div>
-                <h2 class="text-xl font-semibold">Modpacks</h2>
-            </div>
-            <div class="menu-item bg-white p-6 rounded-xl shadow-lg text-center cursor-pointer hover:bg-blue-50">
-                <div class="text-4xl mb-4">🎨</div>
-                <h2 class="text-xl font-semibold">Resource Packs</h2>
-            </div>
-        </div>
-
-        <!-- Content Section -->
-        <div id="contentSection" class="mt-8 hidden">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold" id="sectionTitle"></h2>
-                <button onclick="showMainMenu()" class="bg-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300 transition-all">
-                    ← Back
-                </button>
-            </div>
-            <div id="contentGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Content will be dynamically inserted here -->
+    <!-- Modal -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2 class="modal-title">Loading...</h2>
+            <input type="text" class="search-bar" placeholder="Search..." onkeyup="filterFiles(this.value)">
+            <div class="files-grid" id="files-grid">
+                <div class="loading"></div>
             </div>
         </div>
     </div>
 
     <script>
-        // Sample JSON data (in real implementation, this would be loaded from a file)
+        // Sample JSON data - Replace with your actual data
         const data = {
-            "items": [
+            apk: [
                 {
-                    "name": "Pojav Launcher Latest",
-                    "type": "launcher",
-                    "icon": "📱",
-                    "size": "15MB",
-                    "version": "3.0",
-                    "links": {
-                        "mediafire": "https://mediafire.com/link",
-                        "drive": "https://drive.google.com/link",
-                        "github": "https://github.com/link",
-                        "modrinth": "none",
-                        "curseforge": "none"
-                    }
+                    name: "Pojav Zenith Horizon",
+                    icon: "https://raw.githubusercontent.com/MovTery/ZalithLauncher/refs/heads/main/ZalithLauncher/src/main/res/mipmap-hdpi/ic_launcher.png",
+                    size: "197MB",
+                    version: "1.3.6.4",
+                    description: "Latest stable release with improved performance",
+                    mediafire: "none",
+                    drive: "none",
+                    github: "https://github.com/MovTery/ZalithLauncher/releases/download/136400/ZalithLauncher-1.3.6.4.apk",
+                    modrinth: "none",
+                    curseforge: "none"
                 },
                 {
-                    "name": "OptiFine Mod",
-                    "type": "mods",
-                    "icon": "🎮",
-                    "size": "5MB",
-                    "version": "1.19.2",
-                    "links": {
-                        "mediafire": "https://mediafire.com/link",
-                        "drive": "https://drive.google.com/link",
-                        "github": "none",
-                        "modrinth": "https://modrinth.com/link",
-                        "curseforge": "https://curseforge.com/link"
-                    }
+                    name: "Pojav Launcher v2.9",
+                    icon: "/api/placeholder/64/64",
+                    size: "14MB",
+                    version: "1.19.1",
+                    description: "Previous stable version",
+                    mediafire: "https://mediafire.com/link",
+                    drive: "https://drive.google.com/link",
+                    github: "https://github.com/link",
+                    modrinth: "none",
+                    curseforge: "none"
                 }
-                // Add more items as needed
+            ],
+            mods: [
+                {
+                    name: "OptiFine",
+                    icon: "/api/placeholder/64/64",
+                    size: "5MB",
+                    version: "1.19.2",
+                    description: "Optimize your game performance and add shader support",
+                    mediafire: "https://mediafire.com/link",
+                    drive: "https://drive.google.com/link",
+                    github: "none",
+                    modrinth: "https://modrinth.com/link",
+                    curseforge: "https://curseforge.com/link"
+                },
+                {
+                    name: "JourneyMap",
+                    icon: "/api/placeholder/64/64",
+                    size: "3MB",
+                    version: "1.19.2",
+                    description: "Real-time mapping mod as you explore",
+                    mediafire: "https://mediafire.com/link",
+                    drive: "https://drive.google.com/link",
+                    github: "none",
+                    modrinth: "https://modrinth.com/link",
+                    curseforge: "https://curseforge.com/link"
+                },
+                {
+                    name: "Fabric API",
+                    icon: "/api/placeholder/64/64",
+                    size: "2MB",
+                    version: "1.19.2",
+                    description: "Essential API for Fabric mods",
+                    mediafire: "none",
+                    drive: "none",
+                    github: "https://github.com/link",
+                    modrinth: "https://modrinth.com/link",
+                    curseforge: "https://curseforge.com/link"
+                }
+            ],
+            modpacks: [
+                {
+                    name: "Vanilla Super Perfected 1.0",
+                    icon: "https://avatars.githubusercontent.com/u/179982083?v=4",
+                    size: "150MB",
+                    version: "1.21",
+                    description: "Modpack Optimize Non sodium, and more mods",
+                    mediafire: "none",
+                    drive: "https://drive.google.com/file/d/12lBcyr3gHLr1WF_TWYypEgbFkCCmUuNj/view?usp=drivesdk",
+                    github: "none",
+                    modrinth: "none",
+                    curseforge: "none"
+                },
+                {
+                    name: "Better Minecraft",
+                    icon: "/api/placeholder/64/64",
+                    size: "200MB",
+                    version: "1.19.2",
+                    description: "Enhanced vanilla experience",
+                    mediafire: "https://mediafire.com/link",
+                    drive: "none",
+                    github: "none",
+                    modrinth: "https://modrinth.com/link",
+                    curseforge: "https://curseforge.com/link"
+                }
+            ],
+            resourcepacks: [
+                {
+                    name: "Faithful",
+                    icon: "/api/placeholder/64/64",
+                    size: "25MB",
+                    version: "1.19.2",
+                    description: "Higher resolution vanilla textures",
+                    mediafire: "https://mediafire.com/link",
+                    drive: "https://drive.google.com/link",
+                    github: "https://github.com/link",
+                    modrinth: "none",
+                    curseforge: "none"
+                },
+                {
+                    name: "Default Dark Mode",
+                    icon: "/api/placeholder/64/64",
+                    size: "15MB",
+                    version: "1.19.2",
+                    description: "Dark themed UI elements",
+                    mediafire: "https://mediafire.com/link",
+                    drive: "https://drive.google.com/link",
+                    github: "none",
+                    modrinth: "none",
+                    curseforge: "https://curseforge.com/link"
+                }
             ]
         };
 
-        // Initialize GSAP
-        gsap.config({
-            nullTargetWarn: false
-        });
+        let currentType = '';
+        let filteredData = [];
 
-        // Show content based on selection
-        function showContent(type) {
-            const mainMenu = document.getElementById('mainMenu');
-            const contentSection = document.getElementById('contentSection');
-            const contentGrid = document.getElementById('contentGrid');
-            const sectionTitle = document.getElementById('sectionTitle');
+        function createFileCard(file) {
+            const card = document.createElement('div');
+            card.className = 'file-card';
 
-            // Animation for transition
-            gsap.to(mainMenu, {
-                opacity: 0,
-                y: -20,
-                duration: 0.3,
-                onComplete: () => {
-                    mainMenu.style.display = 'none';
-                    contentSection.style.display = 'block';
-                    gsap.from(contentSection, {
-                        opacity: 0,
-                        y: 20,
-                        duration: 0.3
-                    });
-                }
-            });
-
-            // Filter and display content
-            const filteredItems = data.items.filter(item => item.type === type);
-            sectionTitle.textContent = type.charAt(0).toUpperCase() + type.slice(1);
-            
-            contentGrid.innerHTML = filteredItems.map(item => `
-                <div class="card bg-white rounded-xl shadow-lg overflow-hidden">
-                    <div class="p-6">
-                        <div class="text-4xl mb-4">${item.icon}</div>
-                        <h3 class="text-xl font-semibold mb-2">${item.name}</h3>
-                        <div class="text-gray-600 mb-4">
-                            <p>Size: ${item.size}</p>
-                            <p>Version: ${item.version}</p>
-                        </div>
-                        <div class="flex flex-wrap gap-2">
-                            ${item.links.mediafire !== "none" ? `
-                                <a href="${item.links.mediafire}" class="download-btn bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600">
-                                    MediaFire
-                                </a>
-                            ` : ''}
-                            ${item.links.drive !== "none" ? `
-                                <a href="${item.links.drive}" class="download-btn bg-green-500 text-white px-3 py-1 rounded-lg hover:bg-green-600">
-                                    Drive
-                                </a>
-                            ` : ''}
-                            ${item.links.github !== "none" ? `
-                                <a href="${item.links.github}" class="download-btn bg-gray-800 text-white px-3 py-1 rounded-lg hover:bg-gray-900">
-                                    GitHub
-                                </a>
-                            ` : ''}
-                            ${item.links.modrinth !== "none" ? `
-                                <a href="${item.links.modrinth}" class="download-btn bg-purple-500 text-white px-3 py-1 rounded-lg hover:bg-purple-600">
-                                    Modrinth
-                                </a>
-                            ` : ''}
-                            ${item.links.curseforge !== "none" ? `
-                                <a href="${item.links.curseforge}" class="download-btn bg-orange-500 text-white px-3 py-1 rounded-lg hover:bg-orange-600">
-                                    CurseForge
-                                </a>
-                            ` : ''}
-                        </div>
+            const content = `
+                <img src="${file.icon}" alt="${file.name}" class="file-icon">
+                <div class="file-info">
+                    <div class="file-name">${file.name}</div>
+                <div class="file-meta">
+                        <div>Size: ${file.size}</div>
+                        <div>Version: ${file.version}</div>
                     </div>
                 </div>
-            `).join('');
+                <div class="file-description">${file.description}</div>
+                <div class="download-buttons">
+                    ${file.mediafire !== 'none' ? `
+                        <a href="${file.mediafire}" class="download-btn mediafire" target="_blank">
+                            <i class="fas fa-fire"></i> MediaFire
+                        </a>
+                    ` : ''}
+                    ${file.drive !== 'none' ? `
+                        <a href="${file.drive}" class="download-btn drive" target="_blank">
+                            <i class="fab fa-google-drive"></i> Drive
+                        </a>
+                    ` : ''}
+                    ${file.github !== 'none' ? `
+                        <a href="${file.github}" class="download-btn github" target="_blank">
+                            <i class="fab fa-github"></i> GitHub
+                        </a>
+                    ` : ''}
+                    ${file.modrinth !== 'none' ? `
+                        <a href="${file.modrinth}" class="download-btn modrinth" target="_blank">
+                            <i class="fas fa-cube"></i> Modrinth
+                        </a>
+                    ` : ''}
+                    ${file.curseforge !== 'none' ? `
+                        <a href="${file.curseforge}" class="download-btn curseforge" target="_blank">
+                            <i class="fas fa-fire-alt"></i> CurseForge
+                        </a>
+                    ` : ''}
+                </div>
+            `;
+
+            card.innerHTML = content;
+            return card;
         }
 
-        // Show main menu
-        function showMainMenu() {
-            const mainMenu = document.getElementById('mainMenu');
-            const contentSection = document.getElementById('contentSection');
+        function showModal(type) {
+            currentType = type;
+            const modal = document.getElementById('modal');
+            const modalTitle = modal.querySelector('.modal-title');
+            const searchBar = modal.querySelector('.search-bar');
+            
+            // Set title based on type
+            const titles = {
+                apk: 'Pojav Launcher APK',
+                mods: 'Minecraft Mods',
+                modpacks: 'Modpacks',
+                resourcepacks: 'Resource Packs'
+            };
+            modalTitle.textContent = titles[type];
+            
+            // Clear search
+            searchBar.value = '';
+            
+            // Show modal with animation
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            // Load content
+            filterFiles('');
+        }
 
-            gsap.to(contentSection, {
-                opacity: 0,
-                y: -20,
-                duration: 0.3,
-                onComplete: () => {
-                    contentSection.style.display = 'none';
-                    mainMenu.style.display = 'grid';
-                    gsap.from(mainMenu, {
-                        opacity: 0,
-                        y: 20,
-                        duration: 0.3
-                    });
+        function closeModal() {
+            const modal = document.getElementById('modal');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+            currentType = '';
+        }
+
+        function filterFiles(searchTerm) {
+            const filesGrid = document.getElementById('files-grid');
+            filesGrid.innerHTML = '<div class="loading"></div>';
+
+            // Simulate loading delay
+            setTimeout(() => {
+                const files = data[currentType] || [];
+                filteredData = files.filter(file => 
+                    file.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    file.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    file.version.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+
+                filesGrid.innerHTML = '';
+                if (filteredData.length === 0) {
+                    filesGrid.innerHTML = '<p>No items found.</p>';
+                    return;
                 }
-            });
+
+                filteredData.forEach(file => {
+                    filesGrid.appendChild(createFileCard(file));
+                });
+            }, 300); // Short delay for loading animation
         }
 
-        // Add click events to menu items
-        document.querySelectorAll('.menu-item').forEach((item, index) => {
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('modal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        // Add event listeners to menu items
+        document.querySelectorAll('.menu-item').forEach(item => {
             item.addEventListener('click', () => {
-                const types = ['launcher', 'mods', 'modpacks', 'resourcepacks'];
-                showContent(types[index]);
+                showModal(item.dataset.type);
             });
         });
 
-        // Theme toggle
-        const themeToggle = document.querySelector('.theme-toggle');
-        let isDark = false;
-        themeToggle.addEventListener('click', () => {
-            isDark = !isDark;
-            if (isDark) {
-                document.body.classList.add('bg-gray-900');
-                document.body.classList.add('text-white');
-            } else {
-                document.body.classList.remove('bg-gray-900');
-                document.body.classList.remove('text-white');
+        // Add escape key listener to close modal
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
             }
-            themeToggle.innerHTML = isDark ? '☀️ Theme' : '🌙 Theme';
         });
-
-        // Initialize animations
-        gsap.from('.menu-item', {
-            duration: 0.6,
-            y: 50,
-            opacity: 0,
-            stagger: 0.1,
-            ease: "back.out(1.7)"
-        });
-    </script>
+</script>
 </body>
 </html>
